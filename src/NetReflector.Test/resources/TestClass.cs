@@ -65,7 +65,7 @@ namespace Exortech.NetReflector.Test
 		public static string GetXml(DateTime date, string innerTestClassXml)
 		{
 			return string.Format(@"<reflectTest><count>54</count><date>{0}</date><field>field</field>{1}<message>message</message><name>foo</name></reflectTest>",
-				date, innerTestClassXml);		
+				date.ToString("yyyy-MM-ddTHH:mm:ss"), innerTestClassXml);		
 		}
 
 		public static string GetXml(DateTime date)
