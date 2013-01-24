@@ -1,0 +1,46 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NetReflector</id>
+    <version>1.0.22-beta-1</version>
+    <authors>Daniël te Winkel</authors>
+    <owners>Daniël te Winkel</owners>
+    <projectUrl>https://github.com/dtewinkel/NetReflector</projectUrl>
+    <iconUrl>http://www.twia.nl/favicon.ico</iconUrl>
+    <licenseUrl>https://github.com/dtewinkel/NetReflector/blob/master/LICENSE.txt</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <title>NetReflector</title>
+    <summary>NetReflector</summary>
+    <description>
+      NetReflector is a dynamic reflective populator for the .NET platform.
+      It uses C# attributes to dynamically construct an object model from a configuration file.
+      It greatly simplifies building configurable, pluggable applications by handling the mapping.
+
+      NetReflector is released under LGPL v3. See the the License URL for more details.
+    </description>
+    <releaseNotes>
+      This is a fork from https://github.com/ccnet/NetReflector.
+      Changes:
+      - Converted project to VS2010.
+      - Added a fix for incorrect writing of datetime type.
+
+      See also:
+      - https://github.com/ccnet/NetReflector
+      - http://www.cruisecontrolnet.org/
+      - http://sourceforge.net/projects/netreflector/
+      - http://confluence.public.thoughtworks.org/display/NETREFLECTOR/
+    </releaseNotes>
+    <copyright>Copyright © 2004 - 2013 R. Owen Rogers, TWIA and Contributors</copyright>
+    <tags>NetReflector ccnet</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- <file src="lib\net40\*.dll" target="lib\net40" /> -->
+    <!-- <file src="lib\net40\*.xml" target="lib\net40" /> -->
+    <file src="lib\net20\*.dll" target="lib\net20" />
+    <file src="lib\net20\*.xml" target="lib\net20" />
+    <!-- <file src="tools\**" target="tools" />  -->
+    <!-- <file src="content\**" target="content" />  -->
+  </files>
+</package>

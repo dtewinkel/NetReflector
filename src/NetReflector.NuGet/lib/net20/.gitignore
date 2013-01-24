@@ -1,0 +1,4 @@
+# Ignore all file and direcotries in here
+*
+*/
+!.gitignore

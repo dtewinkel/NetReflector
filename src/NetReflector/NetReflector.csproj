@@ -44,6 +44,8 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <SignAssembly>true</SignAssembly>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -239,9 +241,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PreBuildEvent>del $(SolutionDir)NetReflector.NuGet\lib\net20\$(TargetName).*</PreBuildEvent>
+    <PostBuildEvent>copy $(TargetDir)$(TargetName).* $(SolutionDir)NetReflector.NuGet\lib\net20</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>

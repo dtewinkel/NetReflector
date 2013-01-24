@@ -3,3 +3,8 @@
 /*.suo
 /_ReSharper*
 /*.user
+Debug/
+Release/
+
+#ignore NuGet packages.
+packages/
