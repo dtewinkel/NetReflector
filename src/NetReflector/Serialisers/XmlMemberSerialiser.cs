@@ -6,42 +6,31 @@ namespace Exortech.NetReflector
 {
 	public class XmlMemberSerialiser : IXmlMemberSerialiser
 	{
-		private ReflectorMember member;
-		private ReflectorPropertyAttribute attribute;
-		private IInstantiator instantiator;
-
-		public XmlMemberSerialiser(ReflectorMember member, ReflectorPropertyAttribute attribute)
+	    public XmlMemberSerialiser(ReflectorMember member, ReflectorPropertyAttribute attribute)
 		{
-			this.member = member;
-			this.attribute = attribute;
-			this.instantiator = new DefaultInstantiator();
+			ReflectorMember = member;
+			Attribute = attribute;
+			Instantiator = new DefaultInstantiator();
 		}
 
-		public ReflectorPropertyAttribute Attribute
-		{
-			get { return attribute; }
-		}
 
-		public ReflectorMember ReflectorMember
-		{
-			get { return member; }
-		}
+	    public ReflectorPropertyAttribute Attribute { get; private set; }
 
-		protected IInstantiator Instantiator
-		{
-			get { return instantiator; }
-		}
+	    public ReflectorMember ReflectorMember { get; private set; }
 
-		public virtual void Write(XmlWriter writer, object target)
+	    protected IInstantiator Instantiator { get; private set; }
+
+
+	    public virtual void Write(XmlWriter writer, object target)
 		{
-			object value = member.GetValue(target);
+			object value = ReflectorMember.GetValue(target);
 			if (value != null && IsSerializableValue(value))
 			{
-				writer.WriteStartElement(attribute.Name);
-				if (attribute.InstanceTypeKey != null)
+				writer.WriteStartElement(Attribute.Name);
+				if (Attribute.InstanceTypeKey != null)
 				{
 					ReflectorTypeAttribute typeAttribute = ReflectorTypeAttribute.GetAttribute(value);
-					writer.WriteAttributeString(attribute.InstanceTypeKey, typeAttribute.Name);
+					writer.WriteAttributeString(Attribute.InstanceTypeKey, typeAttribute.Name);
 				}
 				WriteValue(writer, value);
 				writer.WriteEndElement();
@@ -50,7 +39,7 @@ namespace Exortech.NetReflector
 
 		private bool IsSerializableValue(object value)
 		{
-			return (attribute.InstanceTypeKey == null || ReflectorTypeAttribute.GetAttribute(value) != null);
+			return (Attribute.InstanceTypeKey == null || ReflectorTypeAttribute.GetAttribute(value) != null);
 		}
 
 		protected virtual void WriteValue(XmlWriter writer, object value)
@@ -74,21 +63,18 @@ namespace Exortech.NetReflector
 				CheckIfMemberIsRequired();
 				return null;
 			}
-			else
-			{
-				Type targetType = GetTargetType(node, table);
-				return Read(node, targetType, table);
-			}
+		    Type targetType = GetTargetType(node, table);
+		    return Read(node, targetType, table);
 		}
 
         private void CheckIfMemberIsRequired()
 		{
-			if (attribute.Required)
+			if (Attribute.Required)
 			{
                 throw new NetReflectorItemRequiredException(
                     String.Format("Missing Xml node ({0}) for required member ({1}).",
-                        attribute.Name, 
-                        member.MemberName));
+                        Attribute.Name, 
+                        ReflectorMember.MemberName));
 			}
 		}
 
@@ -96,40 +82,37 @@ namespace Exortech.NetReflector
 		{
             // Attempt to find the type
             XmlAttribute typeAttribute = null;
-            if ((attribute.InstanceTypeKey != null) && (childNode.Attributes != null))
+            if ((Attribute.InstanceTypeKey != null) && (childNode.Attributes != null))
             {
-                typeAttribute = childNode.Attributes[attribute.InstanceTypeKey];
+                typeAttribute = childNode.Attributes[Attribute.InstanceTypeKey];
 
                 // This is a special case - the element may be an abstract element (see XSD) and needs the xsi namespace
-                if ((typeAttribute == null) && (attribute.InstanceTypeKey == "type"))
+                if ((typeAttribute == null) && (Attribute.InstanceTypeKey == "type"))
                 {
                     typeAttribute = childNode.Attributes["type", "http://www.w3.org/2001/XMLSchema-instance"];
                 }
             }
 
-			if ((attribute.InstanceTypeKey != null) &&
+			if ((Attribute.InstanceTypeKey != null) &&
                 (childNode.Attributes != null) &&
                 (typeAttribute != null))
 			{
                 IXmlTypeSerialiser serialiser = table[typeAttribute.InnerText];
 				if (serialiser == null)
 				{
-					string msg = @"Type with NetReflector name ""{0}"" does not exist.  The name may be incorrect or the assembly containing the type might not be loaded.
+				    const string msg = @"Type with NetReflector name ""{0}"" does not exist.  The name may be incorrect or the assembly containing the type might not be loaded.
 Xml: {1}";
-                    throw new NetReflectorException(string.Format(msg, typeAttribute.InnerText, childNode.OuterXml));
+				    throw new NetReflectorException(string.Format(msg, typeAttribute.InnerText, childNode.OuterXml));
 				}
-				/// HACK: no way of indicating that attribute is InstanceTypeKey. If this is removed then attribute will generate warning.
+			    // HACK: no way of indicating that attribute is InstanceTypeKey. If this is removed then attribute will generate warning.
                 childNode.Attributes.Remove(typeAttribute);
 				return serialiser.Type;
 			}
-			else if (attribute.InstanceType != null)
-			{
-				return attribute.InstanceType;
-			}
-			else
-			{
-				return member.MemberType;
-			}
+		    if (Attribute.InstanceType != null)
+		    {
+		        return Attribute.InstanceType;
+		    }
+		    return ReflectorMember.MemberType;
 		}
 
 		protected virtual object Read(XmlNode childNode, Type instanceType, NetReflectorTypeTable table)
@@ -148,35 +131,30 @@ Xml: {1}";
                 }
 				return childNode.InnerText;
 			}
-			else
-			{
-				ReflectorTypeAttribute reflectorTypeAttribute = ReflectorTypeAttribute.GetAttribute(instanceType);
-                if (reflectorTypeAttribute == null)
-                {
-                    if (!string.IsNullOrEmpty(attribute.InstanceTypeKey))
-                    {
-                        throw new NetReflectorException(
-                            string.Format("Unable to find reflector type for '{0}' when deserialising '{1}' - '{3}' has not been set" + Environment.NewLine +
-                                            "Xml: {2}",
-                                instanceType.Name,
-                                childNode.Name,
-                                childNode.OuterXml,
-                                attribute.InstanceTypeKey));
-                    }
-                    else
-                    {
-                        throw new NetReflectorException(
-                            string.Format("Unable to find reflector type for '{0}' when deserialising '{1}'" + Environment.NewLine +
-                                            "Xml: {2}",
-                                instanceType.Name,
-                                childNode.Name,
-                                childNode.OuterXml));
-                    }
-                }
-				IXmlSerialiser serialiser = table[reflectorTypeAttribute.Name];
-				// null check
-				return serialiser.Read(childNode, table);
-			}
+
+		    ReflectorTypeAttribute reflectorTypeAttribute = ReflectorTypeAttribute.GetAttribute(instanceType);
+		    if (reflectorTypeAttribute == null)
+		    {
+		        if (!string.IsNullOrEmpty(Attribute.InstanceTypeKey))
+		        {
+		            throw new NetReflectorException(
+		                string.Format("Unable to find reflector type for '{0}' when deserialising '{1}' - '{3}' has not been set" + Environment.NewLine +
+		                              "Xml: {2}",
+		                              instanceType.Name,
+		                              childNode.Name,
+		                              childNode.OuterXml,
+		                              Attribute.InstanceTypeKey));
+		        }
+		        throw new NetReflectorException(
+		            string.Format("Unable to find reflector type for '{0}' when deserialising '{1}'" + Environment.NewLine +
+		                          "Xml: {2}",
+		                          instanceType.Name,
+		                          childNode.Name,
+		                          childNode.OuterXml));
+		    }
+		    IXmlSerialiser serialiser = table[reflectorTypeAttribute.Name];
+		    // null check
+		    return serialiser.Read(childNode, table);
 		}
 
 		// refactor with method above???
@@ -187,16 +165,13 @@ Xml: {1}";
 			{
 				return node.InnerText;
 			}
-			else
-			{
-				// fix
-				return serialiser.Read(node, table);
-			}
+		    // fix
+		    return serialiser.Read(node, table);
 		}
 
 		public virtual void SetValue(object instance, object value)
 		{
-			member.SetValue(instance, value);
+			ReflectorMember.SetValue(instance, value);
 		}
 	}
 }

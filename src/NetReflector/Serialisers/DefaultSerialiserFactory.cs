@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using Exortech.NetReflector.Serialisers;
 using Exortech.NetReflector.Util;
 
 namespace Exortech.NetReflector
@@ -11,11 +13,15 @@ namespace Exortech.NetReflector
 			{
 				return new XmlArraySerialiser(member, attribute);
 			}
-			else if (typeof(ICollection).IsAssignableFrom(member.MemberType) || 
+			if (typeof(ICollection).IsAssignableFrom(member.MemberType) || 
 				(attribute.InstanceType != null && typeof(ICollection).IsAssignableFrom(attribute.InstanceType)))
 			{
 				return new XmlCollectionSerialiser(member, attribute);
 			}
+            if (member.MemberType == typeof(DateTime))
+            {
+                return new XmlDateTimeSerialiser(member, attribute);
+            }
 			return new XmlMemberSerialiser(member, attribute);
 		}
 	}
