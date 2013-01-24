@@ -172,6 +172,7 @@
     <Compile Include="Serialisers\XmlCollectionSerialiser.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Serialisers\XmlDateTimeSerialiser.cs" />
     <Compile Include="Serialisers\XmlDictionarySerialiser.cs">
       <SubType>Code</SubType>
     </Compile>
